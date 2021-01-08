@@ -17,8 +17,15 @@ class MyBN(BayesNet):
         return dic
 
     def conjunctions(self, variables):
-        lcomb = product([True, False], repeat=len(variables))
-        return list(map(lambda c: list(zip(variables, c)), lcomb))
+        if variables == []:
+            return [[]]
+
+        aux = []
+        for conj in self.conjunctions(variables[1:]):
+            aux.append([(variables[0], True)] + conj)
+            aux.append([(variables[0], False)] + conj)
+        
+        return aux
 
 class MySemNet(SemanticNetwork):
     def __init__(self):
@@ -34,11 +41,11 @@ class MySemNet(SemanticNetwork):
 
     def query(self,entity,relname):
         #IMPLEMENTAR AQUI
-        local = [self.query(d.relation.entity, relname) \
-        for d in self.declarations if (isinstance(d.relation, Member) or isinstance(d.relation, Subtype)) and d.relation.entity == entity]
+        local = [self.query(d.relation.entity2, relname) \
+        for d in self.declarations if (isinstance(d.relation, Member) or isinstance(d.relation, Subtype)) and d.relation.entity1 == entity]
 
         return [item for sublist in local for item in sublist if isinstance(item.relation, Association)] +\
-             self.query_local(entity=entity, relname=relname)
+             self.query_local(e1=entity, relname=relname)
 
     #aux function to get var parents
     def parents (self,var):
