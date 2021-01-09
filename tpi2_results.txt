@@ -48,8 +48,4 @@ TWO+TWO=FOUR all solutions:
 [('F', 0), ('O', 9), ('R', 8), ('T', 4), ('U', 3), ('W', 6)]
 [('F', 0), ('O', 9), ('R', 8), ('T', 4), ('U', 5), ('W', 7)]
 Time: 0.21614599999999973
-<<<<<<< HEAD
 19  solutions
-=======
-19  solutions
->>>>>>> upstream/master
