@@ -1,13 +1,15 @@
 #encoding: utf8
 # sites consultados: https://stackoverflow.com/questions/34627211/valueerror-not-enough-values-to-unpack-expected-11-got-1
-# https://stackoverflow.com/questions/44859191/split-string-in-python-to-get-one-value
-# https://stackoverflow.com/questions/34753184/array-associations-python
+# https://stackoverflow.com/questions/3594514/how-to-find-most-common-elements-of-a-list
+# https://www.guru99.com/python-counter-collections-example.html
+# https://stackoverflow.com/questions/54664102/find-the-nth-most-common-word-and-count-in-python
+
 
 
 from semantic_network import *
 from bayes_net import *
 from constraintsearch import *
-
+from collections import Counter
 
 class MyBN(BayesNet):
 
@@ -106,47 +108,51 @@ class MySemNet(SemanticNetwork):
             return True
             #retorna todos os predecessores
         return any([self.predecessor(e1 , pred) for pred in local_predecessor])
-
+    
     def query(self,entity,relname):
         #IMPLEMENTAR AQUI
-        dic = {} 
+        # guardamos as propriedades de cada associação
+        prop = []
         result = []
-        for d in self.declarations:
-            # se é há relação entre entity e entity1
-            if (d.relation.entity1 == entity):
-                if d.relation.name == relname:
-                    # se for do tipo association é diferente
-                    if (isinstance(d.relation,Association)):
-                        # para cada relname se não estiver no dic
-                        if d.relation.name not in dic:
-                            #adicionar ao dicionário
-                            dic[d.relation.name] = {}
-                        # cria-se uma key para representar cada triplo
-                        dic_prop = ','.join(map(str,d.relation.assoc_properties()))
-                        # se o triplo não estiver no dic inicializamos um a apontar para o relname atual
-                        if dic_prop not in dic[d.relation.name]:
-                            dic[d.relation.name][dic_prop] = []
-                        # adicionamos entities do tripo com as entity2
-                        dic[d.relation.name][dic_prop].append(d.relation.entity2)
-                    # se não for do tipo association é feito normalmente
-                    elif not result:
-                        result.append(d.relation.entity2)   
-                # se é predecessor (ou seja, existe relação (TRUE) entre entity2 e entity) e ainda não está no  
-                # result (para não repetir resultados)
-                if self.predecessor(d.relation.entity2, entity) and not result:
-                    result.extend(self.query(d.relation.entity2,relname))
+        for d in self.declarations:  
+            # se o relname for subtype ou member faz-se normalmente como na anterior
+            if relname == "subtype" or relname == "member":      
+                if d.relation.entity1==entity and isinstance(d.relation,Subtype) :
+                    result.append(d.relation.entity2)
+                elif d.relation.entity1==entity and isinstance(d.relation,Member):
+                    result.append(d.relation.entity2)      
+            # se o relname for association
+            elif d.relation.name == relname:
+                #guardamos as associações
+                prop.append(d.relation.assoc_properties())
+                #guardamos as contagens das associações mais comuns
+                prop_mc = Counter(prop).most_common(1)[0][0]
+                #print(prop)
+                #print(prop_mc)
+                # se for single não temos herança
+                if prop_mc[0] == "single":
+                    for c in self.query_cancel(entity,relname):
+                        if c.relation.assoc_properties() == prop_mc:
+                            result.append((Counter(c.relation.entity2).most_common(1)[0][0]))
+                # se não for single
+                else:
+                    for i in self.query_inherit(entity,relname):
+                        if i.relation.assoc_properties() == prop_mc:
+                            result.append(i.relation.entity2) 
+        return list(set(result))
 
-        if relname in dic:
-            max_size = 0
-            #para cada associação no dicionário
-            for assoc in dic[relname]:
-                entities = dic[relname][assoc]
-                if len(entities)>max_size:
-                    max_size = len(entities)
-                    #não repetir respostas
-                    if not entities == result:
-                        result = entities
-        return result
+
+    #função auxiliar adaptada das aulas práticas com o professor DG - função que similar à função query(), 
+    # mas em que existe cancelamento de herança
+    def query_cancel(self, entity, assoc_name):
+        local = [self.query_cancel(d.relation.entity2,assoc_name ) \
+        for d in self.declarations if (isinstance(d.relation, Member) or isinstance(d.relation, Subtype)) and d.relation.entity1 == entity]
+
+        local_decl = self.query_local(e1=entity, relname=assoc_name)
+
+        local_rels = [d.relation.name for d in local_decl]
+
+        return [item for sublist in local for item in sublist if item.relation.name not in local_rels] + local_decl
 
 
 class MyCS(ConstraintSearch):
