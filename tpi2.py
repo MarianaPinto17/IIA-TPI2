@@ -10,18 +10,22 @@ class MyBN(BayesNet):
 
     def individual_probabilities(self):
         # IMPLEMENTAR AQUI
+        #resultado tem de ser dado na forma de dicionário
         dic = {}
+        # para cada variavel presente na rede
         for var in self.dependencies.keys():
             variables = [a for a in self.dependencies.keys() if a != var]
+            #calcula-se a probabilidade de cada var usando o jointProb -> Probabilidade conjunta de uma dada conjuncao de valores de todas as variaveis da rede (só as true)
             dic[var] = sum ([self.jointProb([(var,True)] + b) for b in self.conjunctions(variables)])
         return dic
 
     # função auxiliar adaptada das aulas com o professor DG
     def conjunctions(self, variables):
+        # se está vazia retorna lista vazia
         if variables == []:
             return [[]]
-
         aux = []
+        # para cada conjunção em conjunções
         for conj in self.conjunctions(variables[1:]):
             aux.append([(variables[0], True)] + conj)
             aux.append([(variables[0], False)] + conj)
@@ -58,20 +62,33 @@ class MySemNet(SemanticNetwork):
 
         return result
 
-
+    # tive a ajuda do meu colega diogo correia 
     def query_inherit(self,entity,assoc):
         # IMPLEMENTAR AQUI
-        local = [self.query(d.relation.entity2,assoc) for d in self.declarations if d.relation.name in ["member","subtype"] and d.relation.entity1==entity]
+        result = []
+        
+        for d in self.declarations:
+            if (d.relation.entity1 == entity or d.relation.entity2 == entity) and (d.relation.name == assoc or isinstance(d.relation, Association)\
+            and d.relation.inverse == assoc):
+                result.append(d)
+            if self.predecessor(d.relation.entity2, entity) and not result:
+                result.extend(self.query_inherit(d.relation.entity2,assoc))
+        return result
 
-        return [item for sublist in local for item in sublist] + [d for d in self.declarations if d.relation.entity1 == entity and d.relation.name == assoc]
+    # função auxiliar adaptada das aulas práticas com o professor DG
+    def predecessor(self, e1, e2):
+
+        local_predecessor = [d.relation.entity2 for d in self.query_local() if isinstance (d.relation, (Member,Subtype)) \
+        and d.relation.entity1 == e2]  
+
+        if e1 in local_predecessor:
+            return True
+        
+        return any([self.predecessor(e1 , pred) for pred in local_predecessor])
 
     def query(self,entity,relname):
         #IMPLEMENTAR AQUI
-        local = [self.query(d.relation.entity2, relname) for d in self.declarations \
-        if (isinstance(d.relation, Member) and isinstance(d.relation, Subtype)) and isinstance(d.relation,Association) and d.relation.entity == entity]
-
-        return [item for sublist in local for item in sublist if isinstance(item.relation, relname)] + self.query_local(e1=entity, relname=relname)
-
+        pass
 class MyCS(ConstraintSearch):
 
     def search_all(self,domains=None,xpto=None):
