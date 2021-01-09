@@ -3,7 +3,6 @@
 from semantic_network import *
 from bayes_net import *
 from constraintsearch import *
-from itertools import product
 
 
 class MyBN(BayesNet):
