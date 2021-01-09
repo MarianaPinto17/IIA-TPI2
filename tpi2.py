@@ -1,4 +1,8 @@
 #encoding: utf8
+# sites consultados: https://stackoverflow.com/questions/34627211/valueerror-not-enough-values-to-unpack-expected-11-got-1
+# https://stackoverflow.com/questions/44859191/split-string-in-python-to-get-one-value
+# https://stackoverflow.com/questions/34753184/array-associations-python
+
 
 from semantic_network import *
 from bayes_net import *
@@ -105,7 +109,44 @@ class MySemNet(SemanticNetwork):
 
     def query(self,entity,relname):
         #IMPLEMENTAR AQUI
-        pass
+        dic = {} 
+        result = []
+        for d in self.declarations:
+            # se é há relação entre entity e entity1
+            if (d.relation.entity1 == entity):
+                if d.relation.name == relname:
+                    # se for do tipo association é diferente
+                    if (isinstance(d.relation,Association)):
+                        # para cada relname se não estiver no dic
+                        if d.relation.name not in dic:
+                            #adicionar ao dicionário
+                            dic[d.relation.name] = {}
+                        # cria-se uma key para representar cada triplo
+                        dic_prop = ','.join(map(str,d.relation.assoc_properties()))
+                        # se o triplo não estiver no dic inicializamos um a apontar para o relname atual
+                        if dic_prop not in dic[d.relation.name]:
+                            dic[d.relation.name][dic_prop] = []
+                        # adicionamos entities do tripo com as entity2
+                        dic[d.relation.name][dic_prop].append(d.relation.entity2)
+                    # se não for do tipo association é feito normalmente
+                    elif not result:
+                        result.append(d.relation.entity2)   
+                # se é predecessor (ou seja, existe relação (TRUE) entre entity2 e entity) e ainda não está no  
+                # result (para não repetir resultados)
+                if self.predecessor(d.relation.entity2, entity) and not result:
+                    result.extend(self.query(d.relation.entity2,relname))
+
+        if relname in dic:
+            max_size = 0
+            #para cada associação no dicionário
+            for assoc in dic[relname]:
+                entities = dic[relname][assoc]
+                if len(entities)>max_size:
+                    max_size = len(entities)
+                    #não repetir respostas
+                    if not entities == result:
+                        result = entities
+        return result
 
 
 class MyCS(ConstraintSearch):
