@@ -1,8 +1,14 @@
 #encoding: utf8
-# sites consultados: https://stackoverflow.com/questions/34627211/valueerror-not-enough-values-to-unpack-expected-11-got-1
+# sites consultados pergunta 4: 
 # https://stackoverflow.com/questions/3594514/how-to-find-most-common-elements-of-a-list
 # https://www.guru99.com/python-counter-collections-example.html
 # https://stackoverflow.com/questions/54664102/find-the-nth-most-common-word-and-count-in-python
+
+# sites consultados pergunta 5: 
+# https://stackoverflow.com/questions/1024847/how-can-i-add-new-keys-to-a-dictionary
+# https://stackoverflow.com/questions/41063744/how-to-update-the-value-of-a-key-in-a-dictionary-in-python
+#
+#
 
 
 
@@ -162,6 +168,54 @@ class MyCS(ConstraintSearch):
         # informação, caso precise
         #
         # IMPLEMENTAR AQUI
-        pass
+        # guardar o resultado
+        result = []
+        # lista auxiliar
+        aux = []
+        #lista que contem os valores de cada chave
+        key_val = []
+        
+        dic= {}
+
+        if domains == None:
+            domains = self.domains
+        else:
+            result = xpto
+        # para cada chave
+        for key_val in domains.values():
+            # se alguma estiver vazia retorna none
+            if any([key_val == []]):
+                return None
+            #se nenhuma chave tem pelo menos um valor atribuido
+            elif all( [len(key_val)==1]):
+                for (valor,key_val) in domains.items():
+                    dic = {valor: key_val[0]}
+                    if dic not in result:
+                        result.append(dic)
+                        return result
+                    return None
+        # para cada chave
+        for keys in domains.keys():
+            # se o comprimento do dominio de key > 1
+            if len(domains[keys])>1: 
+                #iteramos sobre o dominio das chaves
+                domains_keys = domains[keys][1:]
+                #para não haver repetições 
+                aux_set = set(aux)
+                #para cada varivavel do dominio no dominio das chaves
+                for var in domains_keys:
+                    # se a variável não está em aux
+                    if var not in aux_set:
+                        #a cada dominio de key adiciona-se a var
+                        domains[keys] = [var]
+                # se var está em domaisn[keys]
+                for var in domains[keys]:
+                    #dicionario com novos dominios
+                    dic = dict(domains)
+        return result
+        
+
+
+
 
 
