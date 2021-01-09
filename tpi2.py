@@ -24,7 +24,6 @@ class MyBN(BayesNet):
         if variables == []:
             return [[]]
         aux = []
-        # para cada conjunção em conjunções
         for conj in self.conjunctions(variables[1:]):
             aux.append([(variables[0], True)] + conj)
             aux.append([(variables[0], False)] + conj)
