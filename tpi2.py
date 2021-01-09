@@ -105,7 +105,7 @@ class MySemNet(SemanticNetwork):
 
     def query(self,entity,relname):
         #IMPLEMENTAR AQUI
-        
+        pass
 
 
 class MyCS(ConstraintSearch):
