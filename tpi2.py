@@ -57,7 +57,7 @@ class MySemNet(SemanticNetwork):
                    formula += val.title() + "(x) or "
                 else:
                     formula += val.title() + "(x) "
-            formula += "=> " + val.title() + "(x)"
+            formula += "=> " + idx.title() + "(x)"
             result.append(formula)
 
         return result
