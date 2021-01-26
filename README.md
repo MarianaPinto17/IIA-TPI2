@@ -1,1 +1,3 @@
-ia-iia-tpi-2
+# Second pratical test (32 Hours) - Artificial Intelligence Introduction
+
+Using bayes net, constraint search and semantic network
